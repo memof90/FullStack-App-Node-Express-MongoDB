@@ -6,6 +6,8 @@ const mongoose = require('mongoose');
 
 const Promotions = require('../models/promotions');
 
+const authenticate = require('../authenticate');
+
 
 const promosRouter = express.Router();
 
@@ -23,7 +25,7 @@ promosRouter.route('/')
     .catch((err) => next(err));
 })
 // post method 
-.post((req,res,next) => {
+.post(authenticate.verifyUser,(req,res,next) => {
    Promotions.create(req.body)
    .then((promotion) => {
        console.log('Promotion created', promotion);
@@ -34,13 +36,13 @@ promosRouter.route('/')
    .catch((err) => next(err));
 })
 // put method
-.put((req,res,next) => {
+.put(authenticate.verifyUser,(req,res,next) => {
     res.statusCode = 403;
     res.setHeader('Content-Type', 'text/plain');
     res.end('PUT operation not supported on /promotions');
 })
 //delete method
-.delete((req,res,next) => {
+.delete(authenticate.verifyUser,(req,res,next) => {
     Promotions.deleteMany({})
     .then((resp) => {
         res.statusCode = 200;
@@ -64,13 +66,13 @@ promosRouter.route('/:promoId')
    .catch((err) => next(err));
 })
 // post method 
-.post((req,res,next) => {
+.post(authenticate.verifyUser,(req,res,next) => {
     res.statusCode = 403;
     res.setHeader('Content-Type', 'text/plain');
     res.end('POST operation not supported on /promotions/' + req.params.promoId);
 })
 // put method
-.put((req,res,next) => {
+.put(authenticate.verifyUser,(req,res,next) => {
     Promotions.findByIdAndUpdate(req.params.promoId, {
         $set: req.body
     }, { new: true })
@@ -82,7 +84,7 @@ promosRouter.route('/:promoId')
     .catch((err) => next(err));
 })
 //delete method
-.delete((req,res,next) => {
+.delete(authenticate.verifyUser,(req,res,next) => {
    Promotions.findByIdAndRemove(req.params.promoId)
    .then((resp) => {
        res.statusCode = 200;
