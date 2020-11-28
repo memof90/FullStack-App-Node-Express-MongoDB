@@ -18,6 +18,7 @@ var usersRouter = require('./routes/users');
 var dishRouter = require('./routes/dishRouter');
 var promosRouter = require('./routes/promoRouter');
 var leaderRouter = require('./routes/leaderRouter');
+var favoriteRouter = require('./routes/favoriteRouter');
 //uploading files
 var uploadRouter = require('./routes/uploadRouter');
 
@@ -83,6 +84,7 @@ app.use('/leaders', leaderRouter);
 
 //upload files 
 app.use('/imageUpload', uploadRouter);
+app.use('/favorites', favoriteRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
