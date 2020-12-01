@@ -4,6 +4,7 @@ const mongoose = require('mongoose');
 const authenticate = require('../authenticate');
 const Favorites = require('../models/favorite');
 const cors = require('./cors');
+const favorites = require('../models/favorite');
 
 const favoriteRouter = express.Router();
 
@@ -103,29 +104,26 @@ favoriteRouter.route('/:dishId')
 .options(cors.corsWithOptions, (req, res) => { res.sendStatus(200); })
 // get operation
 .get(cors.cors, authenticate.verifyUser, (req, res, next) => {
-    Favorites.find({})
-        .populate('user')
-        .populate('dishes')
-        .then((favorites) => {
-            if (favorites) {
-                const favs = favorites.filter(fav => fav.user._id.toString() === req.user.id.toString())[0];
-                const dish = favs.dishes.filter(dish => dish.id === req.params.dishId)[0];
-                if(dish) {
-                    res.statusCode = 200;
-                    res.setHeader("Content-Type", "application/json");
-                    res.json(dish);
-                } else {
-                    var err = new Error('You do not have dish ' + req.params.dishId);
-                    err.status = 404;
-                    return next(err);
-                }
-            } else {
-                var err = new Error('You do not have any favorites');
-                err.status = 404;
-                return next(err);
+    Favorites.findOne({ user: req.user._id })
+    .then((favorites) => {
+        if (!favorites) {
+            res.statusCode = 200;
+            res.setHeader('Content-Type', 'application/json');
+            return res.json({"exists": false, favorites});
+        } else {
+            if (favorites.dishes.indexOf(req.params.dishId) < 0) {
+                res.statusCode = 200;
+                res.setHeader('Content-Type', 'application/json');
+                return res.json({"exists": false, favorites});
             }
-        }, (err) => next(err))
-        .catch((err) => next(err));
+            else {
+                res.statusCode = 200;
+                res.setHeader('Content-Type', 'application/json');
+                return res.json({"exists": true, favorites});
+            }
+        }
+    }, (err) => next(err))
+    .catch((err) => next(err))
 })
 // post operation
 .post(cors.corsWithOptions, authenticate.verifyUser, 
